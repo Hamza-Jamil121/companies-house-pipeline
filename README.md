@@ -61,4 +61,17 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 - **Indexes**: `(company_number, unique_field)` for efficient upsert operations
 
 ---
+## Architecture Diagram
 
+<p align="center">
+  <img src="docs/diagram.png" alt="Pipeline Architecture" width="100%">
+</p>
+
+**Data Flow:**
+1. **Companies House** → Monthly ZIP download (1.8GB)
+2. **Extract** → 289,254 HTML files
+3. **Filter** → Remove already processed files
+4. **Parallel Processing** → 8 workers parse files
+5. **Batch Write** → 500 files per batch to PostgreSQL
+6. **Verification** → Data quality checks
+7. **Notification** → Email alerts on completion

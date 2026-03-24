@@ -53,7 +53,7 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 #### Financials - APPEND ONLY
 - **Reason**: Need full time series to track trends over multiple years
 - **Example**: A company's revenue for 2023, 2024, 2025 should all be preserved
-- **No unique constraint** allows multiple entries per company per metric across different periods
+- **Indexes**: `(company_number)` for efficient upsert operations
 
 #### Directors/Reports/Metadata - UPSERT
 - **Reason**: Only the latest filing matters for current data

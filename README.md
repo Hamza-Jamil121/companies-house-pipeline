@@ -175,21 +175,25 @@ we can check the status of exceution for each montly in ch_pipeline_run table an
 
 ## Future-proofing
 
-# In config.py
+### Extending to Monthly Cron with Dynamic Month Detection
+The pipeline dynamically generates the Companies House download URL based on the current system date.
+
+```python
 from datetime import datetime
 
 def get_current_month_url():
     """Dynamically generate URL for current month"""
     now = datetime.now()
     month_names = [
-        'January', 'February', 'March', 'April', 'May', 'June',
+        'January', 'February', 'March', 'April', 'May', 'June', 
         'July', 'August', 'September', 'October', 'November', 'December'
     ]
+    
     month_name = month_names[now.month - 1]
     year = now.year
-    return f"https://download.companieshouse.gov.uk/Accounts_Monthly_Data-{month_name}{year}.zip"
-
-DOWNLOAD_URL = os.getenv("DOWNLOAD_URL", get_current_month_url())
+    
+    return f"[https://download.companieshouse.gov.uk/Accounts_Monthly_Data-](https://download.companieshouse.gov.uk/Accounts_Monthly_Data-){month_name}{year}.zip"
+```
 
 ## Setup Instructions
 

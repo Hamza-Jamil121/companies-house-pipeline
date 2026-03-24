@@ -148,8 +148,8 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 - **Trade-off**: Extra table, but ensures true idempotency
 
 ### 5. Retry Logic (3 attempts, 5s delay)
-- **Why 3 attempts?** Catches transient errors (file locks, network glitches)
-- **Why 5s delay?** Allows system to recover without long waits
+- Catches transient errors (file locks, network glitches)
+- Allows system to recover without long waits
 - **Trade-off**: Might delay completion, but prevents false failures
 
 ### 6. Error Handling Strategy
@@ -159,7 +159,6 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 
 ### 7. Verification 
 - **Verification**: After pipeline completes, checks data quality
-- **Not validation**: Doesn't stop pipeline on issues
 - **Why?** Allows pipeline to complete, then alerts on problems
 
 ---
@@ -195,8 +194,8 @@ def get_current_month_url():
     
     return f"[https://download.companieshouse.gov.uk/Accounts_Monthly_Data-](https://download.companieshouse.gov.uk/Accounts_Monthly_Data-){month_name}{year}.zip"
 ```
-2. Linux Cron Job
-3. Apache Airflow DAG
+2. Linux Cron Job (for job orchestartion)
+3. Apache Airflow DAG  (for job orchestartion)
 4. Monitoring & Alerts (curretly we are already using email_alert to monitor data pipeline but 
 we can also use some other like cloud watch etc)
 

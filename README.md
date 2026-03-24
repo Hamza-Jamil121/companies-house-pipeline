@@ -62,8 +62,3 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 
 ---
 
-## 🏗️ Architecture
-
-### Complete Data Flow Diagram
-
- 

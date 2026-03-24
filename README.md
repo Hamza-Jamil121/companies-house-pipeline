@@ -61,10 +61,13 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 - **Indexes**: `(company_number, unique_field)` for efficient upsert operations
 
 ---
-## Architecture Diagram
+
+## 🏗️ Architecture
+
+### Data Flow Diagram
 
 <p align="center">
-  <img src="doc/diagram.png" alt="Pipeline Architecture" width="100%">
+  <img src="docs/diagram.png" alt="Pipeline Architecture" width="100%">
 </p>
 
 **Data Flow:**
@@ -75,3 +78,109 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 5. **Batch Write** → 500 files per batch to PostgreSQL
 6. **Verification** → Data quality checks
 7. **Notification** → Email alerts on completion
+
+---
+
+## 🔧 Component Breakdown
+
+### 1. Download/Extract Module (`pipeline_utils.py`)
+- Checks if ZIP exists (skip if already downloaded)
+- Extracts only if no HTML files found (skip if already extracted)
+- Handles large files with streaming downloads
+
+### 2. Parallel Processing (`multiprocessing.Pool`)
+- 8 workers default (configurable via `.env`)
+- Each worker parses one file independently
+- Chunk size of 50 files for balanced load
+
+### 3. Batch Database Writes
+- **Financials**: `COPY` command for high-performance bulk insert
+- **Other tables**: `execute_values` with `ON CONFLICT` for upserts
+- **Batch size**: 500 files per commit
+
+### 4. Idempotency Layer
+- `processed_files` table tracks successful files
+- Pipeline checks against this table before processing
+- Ensures safe re-runs without duplication
+
+### 5. Retry Mechanism
+- Failed files retried up to 3 times
+- 5-second delay between retries
+- Files still failing after retries logged for investigation
+
+### 6. Verification Module
+- Checks pipeline status
+- Validates data volume
+- Checks for NULLs and duplicates
+- Date sanity checks
+
+### 7. Email Notifications
+- Success emails with metrics
+- Failure emails with error details
+- Configurable via `.env` (`EMAIL_ENABLED`)
+
+---
+
+## ⚖️ Trade-offs & Design Decisions
+
+### 1. Batch Size: 500 Files
+
+| Approach | Pros | Cons |
+|----------|------|------|
+| Smaller (100) | Lower memory usage | More commits, slower |
+| **500 (Chosen)** | Good balance | Moderate memory |
+| Larger (2000) | Fewer commits | Memory intensive |
+
+**Why 500?** Provides good throughput without memory constraints. Each batch of 500 parsed results fits comfortably in memory.
+
+### 2. Parallel Workers: 8
+
+| Workers | Pros | Cons |
+|---------|------|------|
+| 4 | Stable, low resource | Slower processing |
+| **8 (Chosen)** | Optimal for most systems | Moderate resource usage |
+| 16 | Very fast | Database connection limits |
+
+**Why 8?** Balances CPU utilization vs I/O contention. Diminishing returns beyond 8-12 on typical hardware.
+
+### 3. Financials: CSV COPY vs INSERT
+- **Why COPY?** 10x faster for bulk inserts
+- **Trade-off**: Slightly more complex (temp file creation)
+- **Alternative**: `execute_values` would work but slower
+
+### 4. Idempotency via `processed_files`
+- **Why not just check financials?** Financials may have no records for some files
+- **Why separate table?** Cleaner, faster, and handles empty files
+- **Trade-off**: Extra table, but ensures true idempotency
+
+### 5. Retry Logic (3 attempts, 5s delay)
+- **Why 3 attempts?** Catches transient errors (file locks, network glitches)
+- **Why 5s delay?** Allows system to recover without long waits
+- **Trade-off**: Might delay completion, but prevents false failures
+
+### 6. Error Handling Strategy
+- Continue on individual file failures - pipeline doesn't stop for one bad file
+- Log all failures - both in DB and log file for later analysis
+- Don't rollback successful writes - partial success is acceptable
+
+### 7. Verification vs Validation
+- **Verification**: After pipeline completes, checks data quality
+- **Not validation**: Doesn't stop pipeline on issues
+- **Why?** Allows pipeline to complete, then alerts on problems
+
+---
+
+## ✅ Verification
+
+### How to Confirm Pipeline Worked Correctly
+
+Run these verification queries after pipeline completion:
+
+#### 1. Check Pipeline Execution Status
+```sql
+SELECT status, files_processed, files_failed, 
+       started_at, completed_at,
+       EXTRACT(EPOCH FROM (completed_at - started_at))/60 as minutes
+FROM ch_pipeline_runs 
+WHERE ch_upload = 'Feb-26'
+ORDER BY started_at DESC LIMIT 1;

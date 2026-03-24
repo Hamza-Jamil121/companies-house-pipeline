@@ -203,24 +203,24 @@ we can also use some other like cloud watch etc)
 ## Setup Instructions
 
 
-python
-psql
+1. python
+1. psql
 
 1. Clone Repository
 git clone https://github.com/Hamza-Jamil121/companies-house-pipeline.git
 cd companies-house-pipeline
 
-2. Create Virtual Environment
+2. Create Virtual Environment: - 
 python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
+1. source venv/bin/activate  # Linux/Mac
+2. venv\Scripts\activate     # Windows
 
-3. Install Dependencies
+3. Install Dependencies:- 
 pip install -r requirements.txt
 
-4. Configure Environment
+4. Configure Environment:- 
 update env as per db configuration or for download path
 
-5. Run Pipeline
+5. Run Pipeline : 
 python run_pipeline.py
 

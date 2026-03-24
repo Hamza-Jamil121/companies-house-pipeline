@@ -168,13 +168,50 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 
 ### How to Confirm Pipeline Worked Correctly
 
-Run these verification queries after pipeline completion:
+Run these verification queries after pipeline completion and we can also integrate it in main pipline:
+we can check the status of exceution for each montly in ch_pipeline_run table and  we can also integrate it in main pipline for automatic verification
 
-#### 1. Check Pipeline Execution Status
-```sql
-SELECT status, files_processed, files_failed, 
-       started_at, completed_at,
-       EXTRACT(EPOCH FROM (completed_at - started_at))/60 as minutes
-FROM ch_pipeline_runs 
-WHERE ch_upload = 'Feb-26'
-ORDER BY started_at DESC LIMIT 1;
+
+
+## Future-proofing
+
+# In config.py
+from datetime import datetime
+
+def get_current_month_url():
+    """Dynamically generate URL for current month"""
+    now = datetime.now()
+    month_names = ['January', 'February', 'March', 'April', 'May', 'June',
+                   'July', 'August', 'September', 'October', 'November', 'December']
+    month_name = month_names[now.month - 1]
+    year = now.year
+    return f"https://download.companieshouse.gov.uk/Accounts_Monthly_Data-{month_name}{year}.zip"
+
+    DOWNLOAD_URL = os.getenv("DOWNLOAD_URL", get_current_month_url())
+
+## Setup Instructions
+
+# Python 3.8+
+python --version
+# PostgreSQL 12+
+psql --version
+
+1. Clone Repository
+git clone https://github.com/Hamza-Jamil121/companies-house-pipeline.git
+cd companies-house-pipeline
+
+2. Create Virtual Environment
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+3. Install Dependencies
+pip install -r requirements.txt
+
+4. Configure Environment
+update env as per db configuration or for download path
+
+5. Run Pipeline
+python run_pipeline.py
+
+Check Failed Files

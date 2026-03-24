@@ -66,5 +66,4 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 
 ### Complete Data Flow Diagram
 
- git config --global user.email "you@example.com"
-  git config --global user.name "Hamza-Jamil121"
+ 

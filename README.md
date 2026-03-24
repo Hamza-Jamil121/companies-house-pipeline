@@ -203,6 +203,7 @@ we can also use some other like cloud watch etc)
 
 1. python
 1. psql
+also update .env for db credential and DATA_DIR where we are going to donwlad the .zip
 
 1. Clone Repository
 git clone https://github.com/Hamza-Jamil121/companies-house-pipeline.git

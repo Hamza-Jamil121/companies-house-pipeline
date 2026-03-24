@@ -64,7 +64,7 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 ## Architecture Diagram
 
 <p align="center">
-  <img src="docs/diagram.png" alt="Pipeline Architecture" width="100%">
+  <img src="doc/diagram.png" alt="Pipeline Architecture" width="100%">
 </p>
 
 **Data Flow:**

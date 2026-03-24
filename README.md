@@ -189,7 +189,6 @@ def get_current_month_url():
     year = now.year
     return f"https://download.companieshouse.gov.uk/Accounts_Monthly_Data-{month_name}{year}.zip"
 
-# Use environment variable or auto-detect
 DOWNLOAD_URL = os.getenv("DOWNLOAD_URL", get_current_month_url())
 
 ## Setup Instructions

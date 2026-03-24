@@ -58,7 +58,7 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 #### Directors/Reports/Metadata - UPSERT
 - **Reason**: Only the latest filing matters for current data
 - **Conflict handling**: `ON CONFLICT DO UPDATE` with latest values
-- **Indexes**: `(company_number, unique_field)` for efficient upsert operations
+- **Indexes**: `(company_number)` for efficient upsert operations
 
 ---
 
@@ -99,6 +99,7 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 - **Batch size**: 500 files per commit
 
 ### 4. Idempotency Layer
+- implemented on month level and also on files level
 - `processed_files` table tracks successful files
 - Pipeline checks against this table before processing
 - Ensures safe re-runs without duplication
@@ -112,7 +113,7 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 - Checks pipeline status
 - Validates data volume
 - Checks for NULLs and duplicates
-- Date sanity checks
+
 
 ### 7. Email Notifications
 - Success emails with metrics
@@ -125,31 +126,24 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 
 ### 1. Batch Size: 500 Files
 
-| Approach | Pros | Cons |
-|----------|------|------|
-| Smaller (100) | Lower memory usage | More commits, slower |
-| **500 (Chosen)** | Good balance | Moderate memory |
-| Larger (2000) | Fewer commits | Memory intensive |
+- Smaller batches (100) → More database commits = slower performance
 
-**Why 500?** Provides good throughput without memory constraints. Each batch of 500 parsed results fits comfortably in memory.
+- Larger batches (2000) → Too much memory usage (500+ parsed results in memory)
+
+- 500 files → Optimal balance between performance and memory constraints. Each batch of 500 parsed results fits comfortably in memory 
 
 ### 2. Parallel Workers: 8
+- Fewer workers (4) → Lower CPU utilization, slower processing
+- 8 workers → Optimal balance for typical hardware (4-8 core CPUs), maximizing CPU utilization without overwhelming the database connection pool.
 
-| Workers | Pros | Cons |
-|---------|------|------|
-| 4 | Stable, low resource | Slower processing |
-| **8 (Chosen)** | Optimal for most systems | Moderate resource usage |
-| 16 | Very fast | Database connection limits |
-
-**Why 8?** Balances CPU utilization vs I/O contention. Diminishing returns beyond 8-12 on typical hardware.
 
 ### 3. Financials: CSV COPY vs INSERT
 - **Why COPY?** 10x faster for bulk inserts
 - **Trade-off**: Slightly more complex (temp file creation)
 - **Alternative**: `execute_values` would work but slower
 
-### 4. Idempotency via `processed_files`
-- **Why not just check financials?** Financials may have no records for some files
+### 4. Idempotency via `processed_files` and `ch_pipeline_run`
+- 
 - **Why separate table?** Cleaner, faster, and handles empty files
 - **Trade-off**: Extra table, but ensures true idempotency
 
@@ -163,7 +157,7 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 - Log all failures - both in DB and log file for later analysis
 - Don't rollback successful writes - partial success is acceptable
 
-### 7. Verification vs Validation
+### 7. Verification 
 - **Verification**: After pipeline completes, checks data quality
 - **Not validation**: Doesn't stop pipeline on issues
 - **Why?** Allows pipeline to complete, then alerts on problems

@@ -167,7 +167,6 @@ This pipeline automates the ingestion of Companies House monthly accounts data:
 
 ### How to Confirm Pipeline Worked Correctly
 
-Run these verification queries after pipeline completion and we can also integrate it in main pipline:
 we can check the status of exceution for each montly in ch_pipeline_run table and  we can also integrate it in main pipline for automatic verification
 
 

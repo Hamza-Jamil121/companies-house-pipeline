@@ -176,6 +176,7 @@ we can check the status of exceution for each montly in ch_pipeline_run table an
 ## Future-proofing
 
 ### Extending to Monthly Cron with Dynamic Month Detection
+1. Auto-detect Current Month
 The pipeline dynamically generates the Companies House download URL based on the current system date.
 
 ```python
@@ -194,13 +195,16 @@ def get_current_month_url():
     
     return f"[https://download.companieshouse.gov.uk/Accounts_Monthly_Data-](https://download.companieshouse.gov.uk/Accounts_Monthly_Data-){month_name}{year}.zip"
 ```
+2. Linux Cron Job
+3. Apache Airflow DAG
+4. Monitoring & Alerts (curretly we are already using email_alert to monitor data pipeline but 
+we can also use some other like cloud watch etc)
 
 ## Setup Instructions
 
-# Python 3.8+
-python --version
-# PostgreSQL 12+
-psql --version
+
+python
+psql
 
 1. Clone Repository
 git clone https://github.com/Hamza-Jamil121/companies-house-pipeline.git
@@ -220,4 +224,3 @@ update env as per db configuration or for download path
 5. Run Pipeline
 python run_pipeline.py
 
-Check Failed Files
